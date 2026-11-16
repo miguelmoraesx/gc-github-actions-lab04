@@ -1,0 +1,38 @@
+name: Lab 04 - Condições e Docker Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Lint
+        id: lint-step
+        run: npm run lint
+      - name: Check lint failure
+        if: failure() && steps.lint-step.outcome == 'failure'
+        run: echo "Código precisa ser revisto"
+  build-docker:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          push: false
+          tags: webacademy-lab04:latest
+      - name: Registre a execução
+        run: sleep 30
+
